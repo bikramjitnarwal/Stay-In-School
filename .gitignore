@@ -10,6 +10,18 @@
 # Files for the ART/Dalvik VM
 *.dex
 
+# Other stuff
+app/app.iml
+local.properties
+.gradle/5.4.1/executionHistory/executionHistory.bin
+.gradle/5.4.1/executionHistory/executionHistory.lock
+.gradle/5.4.1/fileHashes/fileHashes.bin
+.gradle/5.4.1/fileHashes/fileHashes.lock
+.gradle/buildOutputCleanup/buildOutputCleanup.lock
+.idea/caches/build_file_checksums.ser
+.idea/caches/gradle_models.ser
+.idea/workspace.xml
+
 # Java class files
 *.class
 
@@ -20,8 +32,8 @@ out/
 release/
 
 # Gradle files
-.gradle/
-build/
+*.gradle/
+.idea/caches/gradle_models.serbuild/
 
 # Local configuration file (sdk path, etc)
 local.properties
