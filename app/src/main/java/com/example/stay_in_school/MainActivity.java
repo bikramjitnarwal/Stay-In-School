@@ -18,21 +18,21 @@ public class MainActivity extends AppCompatActivity {
         Button thankButton = findViewById(R.id.thank_mr_goose);
         Button editScheduleButton = findViewById(R.id.edit_schedule);
 
-        settingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent settingsActivity = new Intent(MainActivity.this, SettingsActivity.class);
-                startActivity(settingsActivity);
-            }
-        });
+//        settingsButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent settingsActivity = new Intent(MainActivity.this, SettingsActivity.class);
+//                startActivity(settingsActivity);
+//            }
+//        });
 
-        thankButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent thankmrgooseActivity = new Intent(MainActivity.this, ThankMrGooseActivity.class);
-                startActivity(thankmrgooseActivity);
-            }
-        });
+//        thankButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent thankmrgooseActivity = new Intent(MainActivity.this, ThankMrGooseActivity.class);
+//                startActivity(thankmrgooseActivity);
+//            }
+//        });
 
         editScheduleButton.setOnClickListener(new View.OnClickListener() {
             @Override

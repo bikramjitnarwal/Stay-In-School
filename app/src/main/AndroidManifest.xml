@@ -10,8 +10,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".EditScheduleActivity"></activity>
-        <activity android:name=".ThankMrGooseActivity" />
-        <activity android:name=".SettingsActivity" />
+<!--        <activity android:name=".ThankMrGooseActivity" />-->
+<!--        <activity android:name=".SettingsActivity" />-->
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
