@@ -1,28 +1,33 @@
 package com.example.stay_in_school;
 
-import java.util.Calendar;
+import android.icu.util.Calendar;
 
+/**
+ * An event with a location and a start and end time.
+ */
 public class Session {
     public enum ClassType {LECTURE, TUTORIAL, PRACTICAL}
 
+    private String courseCode;
     private ClassType classType;
     private Calendar startTime;
     private Calendar endTime;
     private String location;    // Will need another data type representation
 
-    Session(ClassType classType, Calendar startTime, Calendar endTime, String location) {
+    Session(String courseCode, ClassType classType, Calendar startTime, Calendar endTime, String location) {
+        this.courseCode = courseCode;
         this.classType = classType;
         this.startTime = startTime;
         this.endTime = endTime;
         this.location = location;
     }
 
-    public ClassType getClassType() {
-        return classType;
+    public String getCourseCode() {
+        return courseCode;
     }
 
-    public void setClassType(ClassType classType) {
-        this.classType = classType;
+    public ClassType getClassType() {
+        return classType;
     }
 
     Calendar getStartTime() {
