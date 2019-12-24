@@ -1,16 +1,19 @@
 package com.example.stay_in_school;
 
-import java.util.Calendar;
+
+import android.icu.util.Calendar;
 
 /**
- * A concrete session that takes place at a specific date
+ * A lecture, tutorial, or practical on a student's
+ * timetable that will be repeated weekly or bi-weekly
  */
 public class ScheduledSession extends Session {
-    private boolean attended;
+       private boolean attended;
 
-    public ScheduledSession(ClassType classType, Calendar startTime, Calendar endTime, String location) {
-        super(classType, startTime, endTime, location);
-        this.attended = false;
+    public ScheduledSession(String courseCode, ClassType classType, Calendar startTime,
+                            Calendar endTime, String location, boolean attended) {
+        super(courseCode, classType, startTime, endTime, location);
+        this.attended = attended;
     }
 
     public boolean isAttended() {

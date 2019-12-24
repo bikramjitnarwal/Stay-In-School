@@ -1,17 +1,19 @@
 package com.example.stay_in_school;
 
-import java.time.DayOfWeek;
-import java.util.Calendar;
+import android.icu.util.Calendar;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
  * A lecture, tutorial, or practical on a student's
  * timetable that will be repeated weekly or bi-weekly
  */
 public class PeriodicSession extends Session{
-    public enum Period {WEEKLY, BIWEEKLY}
+    public enum Period {ONCE, WEEKLY, BIWEEKLY}
 
-    private DayOfWeek dayOfWeek;
     private Period period;
+    private PropertyChangeSupport support;
 
     /**
      * Constructs a periodic session
@@ -19,22 +21,33 @@ public class PeriodicSession extends Session{
      * @param startTime the first day of session and time of day the session starts
      * @param endTime the last day of session and time of day the session ends
      * @param location the location of the session
-     * @param dayOfWeek the day of the week the session lays on
      * @param period session happens weekly, or bi-weekly
      */
-    public PeriodicSession(ClassType classType, Calendar startTime, Calendar endTime,
-                            String location, DayOfWeek dayOfWeek, Period period) {
-        super(classType, startTime, endTime, location);
-        this.dayOfWeek = dayOfWeek;
+    public PeriodicSession(String courseCode, ClassType classType, Calendar startTime,
+                           Calendar endTime, String location, Period period) {
+        super(courseCode, classType, startTime, endTime, location);
         this.period = period;
     }
 
-    public DayOfWeek getDayOfWeek() {
-        return dayOfWeek;
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        support.addPropertyChangeListener(pcl);
     }
 
-    public void setDayOfWeek(DayOfWeek dayOfWeek) {
-        this.dayOfWeek = dayOfWeek;
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        support.removePropertyChangeListener(pcl);
+    }
+
+    public void setStartTime(Calendar startTime) {
+        Calendar oldValue = getStartTime();
+        super.setStartTime(startTime);
+        support.firePropertyChange("startTime", oldValue, startTime);
+
+    }
+
+    public void setLocation(String location) {
+        String oldValue = getLocation();
+        super.setLocation(location);
+        support.firePropertyChange("location", oldValue, location);
     }
 
     public Period getPeriod() {
@@ -42,6 +55,9 @@ public class PeriodicSession extends Session{
     }
 
     public void setPeriod(Period period) {
+        Period oldValue = this.period;
         this.period = period;
+        support.firePropertyChange("period", oldValue, period);
+
     }
 }
