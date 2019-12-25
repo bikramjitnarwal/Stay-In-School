@@ -1,6 +1,7 @@
 package com.example.stay_in_school;
 
 import android.icu.util.Calendar;
+import android.util.Pair;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -37,10 +38,11 @@ public class PeriodicSession extends Session{
         support.removePropertyChangeListener(pcl);
     }
 
-    public void setStartTime(Calendar startTime) {
-        Calendar oldValue = getStartTime();
+    public void setTime(Calendar startTime, Calendar endTime) {
+        Pair<Calendar, Calendar> oldValue = new Pair<>(getStartTime(), getEndTime());
         super.setStartTime(startTime);
-        support.firePropertyChange("startTime", oldValue, startTime);
+        super.setEndTime(endTime);
+        support.firePropertyChange("time", oldValue, new Pair<>(startTime, endTime));
 
     }
 

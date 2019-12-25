@@ -1,6 +1,7 @@
 package com.example.stay_in_school;
 
 import android.icu.util.Calendar;
+import android.util.Pair;
 import android.util.Range;
 
 import java.beans.PropertyChangeEvent;
@@ -23,7 +24,6 @@ public class Course implements PropertyChangeListener {
 
     private List<SchoolTerm> schoolTerms;
     private Map<PeriodicSession, List<ScheduledSession>> sessionsMap;
-    private Calendar currentTime = Calendar.getInstance();
 
     /**
      * Constructs a new course with no existing sessions.
@@ -55,22 +55,21 @@ public class Course implements PropertyChangeListener {
     }
 
     /**
-     * Deletes all future sessions of this periodic session
-     * @param session the periodic session being deleted
-     */
-    public void deletePeriodicSession(PeriodicSession session) {
-        session.removePropertyChangeListener(this);
-        sessionsMap.remove(session);
-        updateFutureSessions(session, "delete");
-    }
-
-    /**
      * Adds the periodic session and corresponding scheduled sessions to the course.
      * @param session the periodic session being added
      */
     public void addPeriodicSession(PeriodicSession session) {
         session.addPropertyChangeListener(this);
         sessionsMap.put(session, generateScheduledSessions(session));
+    }
+
+    /**
+     * Deletes all future sessions of this periodic session
+     * @param session the periodic session being deleted
+     */
+    public void deletePeriodicSession(PeriodicSession session) {
+        session.removePropertyChangeListener(this);
+        deleteFutureSessions(session, Calendar.getInstance());
     }
 
     /**
@@ -82,37 +81,69 @@ public class Course implements PropertyChangeListener {
         Object source = propertyChangeEvent.getSource();
         for (PeriodicSession periodicSession : sessionsMap.keySet()) {
             if (periodicSession.equals(source)) {
-                updateFutureSessions(periodicSession, propertyChangeEvent.getPropertyName());
+                switch (propertyChangeEvent.getPropertyName()) {
+                    case "time" :
+                        updateFutureStartTimes(periodicSession,
+                                (Pair<Calendar, Calendar>) propertyChangeEvent.getOldValue(),
+                                Calendar.getInstance());
+                        break;
+                    case "location" :
+                        updateFutureLocations(periodicSession, Calendar.getInstance());
+                        break;
+                    case "period" :
+                        sessionsMap.replace(periodicSession, generateScheduledSessions(periodicSession));
+                }
                 return;
             }
         }
     }
 
-    /**
-     * Updates future scheduled sessions based on the property changed by the periodic session.
-     * @param periodicSession the periodic sessions to update
-     * @param propertyName the property to update
-     */
-    private void updateFutureSessions(PeriodicSession periodicSession, String propertyName) {
+    // Updates the time of future events either by replacing them if the change is drastic or
+    // changing the day, hour, minute parameters
+    private void updateFutureStartTimes(PeriodicSession periodicSession,
+                                        Pair<Calendar, Calendar> oldTimes, Calendar currentTime) {
+        // If the period starts on a different week, then regenerate all the events
+        if (oldTimes.first.get(Calendar.WEEK_OF_YEAR) !=
+                periodicSession.getStartTime().get(Calendar.WEEK_OF_YEAR)) {
+            sessionsMap.replace(periodicSession, generateScheduledSessions(periodicSession));
+            return;
+        }
+
+        // Changes the day of week and time of day for each future session
         List<ScheduledSession> sessionsList = sessionsMap.get(periodicSession);
         for (ScheduledSession session : sessionsList) {
-            if (currentTime.compareTo(session.getStartTime()) < 0) {
-                switch (propertyName) {
-                    case "delete" :
-                        sessionsList.remove(session);
-                        break;
-                    case "startTime" :
-                        // TODO: need to figure out computation for new startTime
-                        session.setStartTime(periodicSession.getStartTime());
-                        break;
-                    case "location" :
-                        session.setLocation((periodicSession.getLocation()));
-                        break;
-                    case "period" :
-                        // TODO: need to figure out computation for new period
-                        break;
-                }
+            if (currentTime.before(session.getEndTime())) {
+                Calendar newStartTime = session.getStartTime();
+                Calendar periodicStartTime = periodicSession.getStartTime();
+                newStartTime.set(Calendar.DAY_OF_WEEK, periodicStartTime.get(Calendar.DAY_OF_WEEK));
+                newStartTime.set(Calendar.HOUR_OF_DAY, periodicStartTime.get(Calendar.HOUR_OF_DAY));
+                newStartTime.set(Calendar.MINUTE, periodicStartTime.get(Calendar.MINUTE));
+                session.setStartTime(newStartTime);
+
+                Calendar newEndTime = session.getEndTime();
+                Calendar periodicEndTime = periodicSession.getEndTime();
+                newEndTime.set(Calendar.DAY_OF_WEEK, periodicEndTime.get(Calendar.DAY_OF_WEEK));
+                newEndTime.set(Calendar.HOUR_OF_DAY, periodicEndTime.get(Calendar.HOUR_OF_DAY));
+                newEndTime.set(Calendar.MINUTE, periodicEndTime.get(Calendar.MINUTE));
+                session.setEndTime(newEndTime);
             }
+        }
+    }
+
+    //
+    private void updateFutureLocations(PeriodicSession periodicSession, Calendar currentTime) {
+        List<ScheduledSession> sessionsList = sessionsMap.get(periodicSession);
+        for (ScheduledSession session : sessionsList) {
+            if (currentTime.before(session.getEndTime()))
+                session.setLocation(periodicSession.getLocation());
+        }
+    }
+
+    private void deleteFutureSessions(PeriodicSession periodicSession, Calendar currentTime) {
+        List<ScheduledSession> sessionsList = sessionsMap.get(periodicSession);
+        for (ScheduledSession session : sessionsList) {
+            if (currentTime.before(session.getEndTime()))
+                sessionsList.remove(session);
         }
     }
 

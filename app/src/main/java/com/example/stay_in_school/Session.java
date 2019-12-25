@@ -31,7 +31,7 @@ public class Session {
     }
 
     Calendar getStartTime() {
-        return startTime;
+        return (Calendar) startTime.clone();
     }
 
     void setStartTime(Calendar startTime) {
@@ -39,7 +39,7 @@ public class Session {
     }
 
     Calendar getEndTime() {
-        return endTime;
+        return (Calendar) endTime.clone();
     }
 
     void setEndTime(Calendar endTime) {
