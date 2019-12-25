@@ -1,6 +1,8 @@
 package com.example.stay_in_school;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,5 +44,12 @@ public class SchoolYear {
      */
     public Map<String, Course> getCourses() {
         return new HashMap<>(courses);
+    }
+
+    public List<ScheduledSession> getAllScheduledSessions() {
+        List<ScheduledSession> allScheduledSessions = new ArrayList<>();
+        for (String courseCode : courses.keySet())
+            allScheduledSessions.addAll(courses.get(courseCode).getAllScheduledSessions());
+        return allScheduledSessions;
     }
 }

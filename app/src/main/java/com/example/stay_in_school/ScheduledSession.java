@@ -7,7 +7,7 @@ import android.icu.util.Calendar;
  * A lecture, tutorial, or practical on a student's
  * timetable that will be repeated weekly or bi-weekly
  */
-public class ScheduledSession extends Session {
+public class ScheduledSession extends Session implements Comparable<ScheduledSession>{
        private boolean attended;
 
     public ScheduledSession(String courseCode, ClassType classType, Calendar startTime,
@@ -22,5 +22,10 @@ public class ScheduledSession extends Session {
 
     public void setAttended(boolean attended) {
         this.attended = attended;
+    }
+
+    @Override
+    public int compareTo(ScheduledSession session) {
+        return getStartTime().compareTo(session.getStartTime());
     }
 }
