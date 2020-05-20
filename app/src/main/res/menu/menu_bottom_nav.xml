@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/editScheduleFragment"
+        android:title="Edit Schedule"
+        app:showAsAction="always"
+        android:orderInCategory="1"/>
+
+    <item android:id="@+id/dashboardFragment"
+        android:title="Dashboard"
+        app:showAsAction="always"
+        android:orderInCategory="2"/>
+
+    <item android:id="@+id/sessionsFragment"
+        android:title="Sessions"
+        app:showAsAction="always"
+        android:orderInCategory="3"/>
+</menu>
