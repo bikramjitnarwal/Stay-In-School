@@ -282,3 +282,6 @@ hs_err_pid*
 !/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.gitignore.io/api/android,intellij,androidstudio
+
+# Google Maps API Key
+/app/src/main/res/values/google_maps_api.xml
