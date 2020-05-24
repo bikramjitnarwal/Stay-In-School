@@ -28,6 +28,7 @@ public class PeriodicSession extends Session{
                            Calendar endTime, String location, Period period) {
         super(courseCode, classType, startTime, endTime, location);
         this.period = period;
+        this.support = new PropertyChangeSupport(this);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener pcl) {

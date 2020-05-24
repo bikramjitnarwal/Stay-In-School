@@ -4,8 +4,8 @@ package com.example.stay_in_school;
 import android.icu.util.Calendar;
 
 /**
- * A lecture, tutorial, or practical on a student's
- * timetable that will be repeated weekly or bi-weekly
+ * A lecture, tutorial, or practical that takes place
+ * at a unique time
  */
 public class ScheduledSession extends Session implements Comparable<ScheduledSession>{
        private boolean attended;

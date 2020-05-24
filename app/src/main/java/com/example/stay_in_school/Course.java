@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -235,8 +234,11 @@ public class Course implements PropertyChangeListener {
         this.code = code;
     }
 
-    public Set<PeriodicSession> getPeriodicSessions() {
-        return sessionsMap.keySet();
+    public List<PeriodicSession> getActualPeriodicSessions() {
+        List<PeriodicSession> periodicSessions = new ArrayList<>(sessionsMap.keySet());
+        for (PeriodicSession session : periodicSessions)
+            if (session.getPeriod().equals(PeriodicSession.Period.ONCE)) periodicSessions.remove(session);
+        return periodicSessions;
     }
 
     public List<ScheduledSession> getAllScheduledSessions() {

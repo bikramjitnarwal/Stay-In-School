@@ -13,7 +13,7 @@ public class SchoolYear {
     private SchoolTerm firstTerm;
     private SchoolTerm secondTerm;
 
-    // The key is the course code, the value is the course
+    // The key is the course code, the value is the course object
     private Map<String, Course> courses;
 
     public SchoolYear(String year, SchoolTerm firstTerm, SchoolTerm secondTerm, Map<String, Course> courses) {
