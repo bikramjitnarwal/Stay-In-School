@@ -1,29 +1,41 @@
 package com.example.stay_in_school;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+
+import org.jetbrains.annotations.NotNull;
 
 
 /**
@@ -32,9 +44,14 @@ import com.google.android.gms.tasks.OnSuccessListener;
  * create an instance of this fragment.
  */
 public class DashboardFragment extends Fragment implements OnMapReadyCallback {
-    private MapView mapView;
-    private GoogleMap mMap;
+    private Context context;
+    private Activity activity;
+
+    private GoogleMap googleMap;
     private FusedLocationProviderClient fusedLocationClient;
+    private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
+
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     public DashboardFragment() {
@@ -63,10 +80,10 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        mapView = view.findViewById(R.id.mapView);
+        MapView mapView = view.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
-        mapView.getMapAsync(this);//when you already implement OnMapReadyCallback in your fragment
+        mapView.getMapAsync(this);
     }
 
     /**
@@ -80,63 +97,144 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
+        this.googleMap = googleMap;
+        context = getContext();
+        activity = getActivity();
+        // figure out what TODO: when the activity is null
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity);
 
-        // Checks to see if there is fine location permission
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            // If permission not yet granted, explain rationale
-            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-                Toast.makeText(getActivity(), "Your current location is needed.",
-                        Toast.LENGTH_LONG).show();
-            }
-            // Request for permission
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
-        } else {
-            displayCurrentLocation();
-        }
+        setUpLocationCallback();
+        setUpLocationRequest();
+        startLocationUpdates();
     }
 
+    /**
+     * For testing purposes, when a location is received markers are added to the map
+     */
+    private void setUpLocationCallback() {
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+                    googleMap.addMarker(new MarkerOptions().position(loc));
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
+                    googleMap.moveCamera(CameraUpdateFactory.zoomTo(18));
+                }
+            }
+        };
+    }
+
+    private void setUpLocationRequest() {
+        locationRequest = LocationRequest.create();
+        locationRequest.setInterval(10 * 1000);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    /**
+     * Checks for location permissions and location settings.
+     * If both are valid, start tracking the location.
+     */
+    private void startLocationUpdates() {
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest);
+        Task<LocationSettingsResponse> task =
+                LocationServices.getSettingsClient(activity).checkLocationSettings(builder.build());
+
+        task.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
+            @Override
+            public void onComplete(@NotNull Task<LocationSettingsResponse> task) {
+                try {
+                    LocationSettingsResponse response = task.getResult(ApiException.class);
+
+                    /* Check for location permissions */
+                    if (ActivityCompat.checkSelfPermission(context,
+                            Manifest.permission.ACCESS_FINE_LOCATION) !=
+                            PackageManager.PERMISSION_GRANTED &&
+                            ActivityCompat.checkSelfPermission(context,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                                    PackageManager.PERMISSION_GRANTED) {
+
+                        // If permission not yet granted, explain rationale
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                                Manifest.permission.ACCESS_FINE_LOCATION)) {
+                            Toast.makeText(activity, "Your current location is needed.",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        // Request for permission
+                        requestPermissions(
+                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                LOCATION_PERMISSION_REQUEST_CODE);
+
+                        return;
+                    }
+
+                    fusedLocationClient.requestLocationUpdates(locationRequest,
+                            locationCallback,
+                            Looper.getMainLooper());
+
+                } catch (ApiException exception) {
+                    switch (exception.getStatusCode()) {
+                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                            // Location settings are not satisfied. But could be fixed by showing the
+                            // user a dialog.
+                            // TODO: Ask user to change location settings
+
+                            try {
+                                // Cast to a resolvable exception.
+                                ResolvableApiException resolvable = (ResolvableApiException) exception;
+                                // Show the dialog by calling startResolutionForResult(),
+                                // and check the result in onActivityResult().
+//                                resolvable.startResolutionForResult(
+//                                        OuterClass.this,
+//                                        REQUEST_CHECK_SETTINGS);
+//                            } catch (IntentSender.SendIntentException e) {
+                                // Ignore the error.
+                            } catch (ClassCastException e) {
+                                // Ignore, should be an impossible error.
+                            }
+                            break;
+                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                            // Location settings are not satisfied. However, we have no way to fix the
+                            // settings so we won't show the dialog.
+                            break;
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Callback method for requesting permissions from the user
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String[] permissions, int[] grantResults) {
+                                           @NotNull String[] permissions, @NotNull int[] grantResults) {
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             // If request is cancelled, the result arrays are empty.
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                displayCurrentLocation();
+                startLocationUpdates();
             } else {
-                Toast.makeText(getActivity(), "Unable to display your current location.",
+                Toast.makeText(activity, "Unable to display your current location.",
                         Toast.LENGTH_LONG).show();
             }
         } else {
+            Toast.makeText(activity, "Unable to display your current location.",
+                    Toast.LENGTH_LONG).show();
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
-
     }
 
-    private void displayCurrentLocation() {
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
-
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            LatLng current = new LatLng(location.getLatitude(), location.getLongitude());
-//                            LatLng current = new LatLng(43.65, -79.38);
-
-//                            float[] result = {1};
-                            mMap.addMarker(new MarkerOptions().position(current).title("here"));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(current));
-                            mMap.moveCamera(CameraUpdateFactory.zoomTo(18));
-                        }
-                    }
-                });
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (fusedLocationClient != null) {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+        }
     }
 }
