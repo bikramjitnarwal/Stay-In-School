@@ -20,4 +20,5 @@
         android:name="com.example.stay_in_school.SessionsFragment"
         android:label="fragment_sessions"
         tools:layout="@layout/fragment_sessions" />
+
 </navigation>

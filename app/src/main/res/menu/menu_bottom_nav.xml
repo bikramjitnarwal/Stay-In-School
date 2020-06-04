@@ -5,15 +5,18 @@
     <item android:id="@+id/editScheduleFragment"
         android:title="Edit Schedule"
         app:showAsAction="always"
-        android:orderInCategory="1"/>
+        android:orderInCategory="1"
+        android:icon="@drawable/ic_more_horizontal"/>
 
     <item android:id="@+id/dashboardFragment"
         android:title="Dashboard"
         app:showAsAction="always"
-        android:orderInCategory="2"/>
+        android:orderInCategory="2"
+        android:icon="@drawable/ic_bar_chart"/>
 
     <item android:id="@+id/sessionsFragment"
         android:title="Sessions"
         app:showAsAction="always"
-        android:orderInCategory="3"/>
+        android:orderInCategory="3"
+        android:icon="@drawable/ic_pie_chart"/>
 </menu>
